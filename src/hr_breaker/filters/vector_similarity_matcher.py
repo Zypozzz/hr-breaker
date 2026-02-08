@@ -1,9 +1,10 @@
-import litellm
+from litellm import aembedding as litellm_aembedding
 
 from hr_breaker.config import get_settings
 from hr_breaker.filters.base import BaseFilter
 from hr_breaker.filters.registry import FilterRegistry
 from hr_breaker.models import FilterResult, JobPosting, OptimizedResume, ResumeSource
+from hr_breaker.utils.retry import run_with_retry
 
 
 @FilterRegistry.register
@@ -39,7 +40,8 @@ class VectorSimilarityMatcher(BaseFilter):
         job_text = f"{job.title} {job.description} {' '.join(job.requirements)}"
 
         try:
-            result = litellm.embedding(
+            result = await run_with_retry(
+                litellm_aembedding,
                 model=settings.embedding_model,
                 input=[resume_text, job_text],
                 dimensions=settings.embedding_output_dimensionality,
