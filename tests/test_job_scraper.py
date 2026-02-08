@@ -1,5 +1,7 @@
 """Tests for job_scraper service."""
 
+from datetime import datetime, timezone
+
 import pytest
 import httpx
 from unittest.mock import MagicMock, Mock, patch
@@ -305,7 +307,7 @@ class TestScrapeJobPosting:
         cdx_response.status_code = 200
         cdx_response.json = Mock(return_value=[
             ["urlkey", "timestamp", "original", "mimetype", "statuscode", "digest", "length"],
-            ["com,example)/job", "20260101120000", "https://example.com/job", "text/html", "200", "abc", "1000"]
+            ["com,example)/job", datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S"), "https://example.com/job", "text/html", "200", "abc", "1000"]
         ])
         cdx_response.raise_for_status = Mock()
 

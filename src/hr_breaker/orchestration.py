@@ -30,7 +30,13 @@ from hr_breaker.services.pdf_parser import extract_text_from_pdf
 from hr_breaker.services.renderer import RenderError, HTMLRenderer
 
 # Ensure filters are registered
-_ = DataValidator, LLMChecker, KeywordMatcher, VectorSimilarityMatcher, HallucinationChecker
+_ = (
+    DataValidator,
+    LLMChecker,
+    KeywordMatcher,
+    VectorSimilarityMatcher,
+    HallucinationChecker,
+)
 
 
 @contextmanager
@@ -64,14 +70,16 @@ async def run_filters(
         for f, result in zip(filter_instances, raw_results):
             if isinstance(result, Exception):
                 logger.error(f"Filter {f.name} raised exception: {result}")
-                results.append(FilterResult(
-                    filter_name=f.name,
-                    passed=False,
-                    score=0.0,
-                    threshold=getattr(f, 'threshold', 0.5),
-                    issues=[f"Filter error: {type(result).__name__}: {result}"],
-                    suggestions=["Check filter implementation"],
-                ))
+                results.append(
+                    FilterResult(
+                        filter_name=f.name,
+                        passed=False,
+                        score=0.0,
+                        threshold=getattr(f, "threshold", 0.5),
+                        issues=[f"Filter error: {type(result).__name__}: {result}"],
+                        suggestions=["Check filter implementation"],
+                    )
+                )
             else:
                 results.append(result)
         return ValidationResult(results=results)
@@ -82,7 +90,11 @@ async def run_filters(
 
     for filter_cls in filters:
         # Skip high-priority (last) filters if earlier ones failed
-        if filter_cls.priority >= 100 and results and not all(r.passed for r in results):
+        if (
+            filter_cls.priority >= 100
+            and results
+            and not all(r.passed for r in results)
+        ):
             continue
 
         f = filter_cls(no_shame=no_shame)
@@ -127,6 +139,9 @@ async def optimize_for_job(
         (optimized_resume, validation_result, job_posting)
     """
     settings = get_settings()
+
+    logger.info("Starting optimization with settings: %s", settings)
+
     if max_iterations is None:
         max_iterations = settings.max_iterations
 
@@ -142,10 +157,10 @@ async def optimize_for_job(
     last_attempt: str | None = None
 
     if no_shame:
-        logger.debug("No-shame mode enabled")
+        logger.info("No-shame mode enabled")
 
     for i in range(max_iterations):
-        logger.debug(f"Iteration {i + 1}/{max_iterations}")
+        logger.info(f"Iteration {i + 1}/{max_iterations}")
         ctx = IterationContext(
             iteration=i,
             original_resume=source.content,
@@ -154,10 +169,12 @@ async def optimize_for_job(
         )
         with log_time("optimize_resume"):
             optimized = await optimize_resume(source, job, ctx, no_shame=no_shame)
-        logger.debug(f"Optimizer changes: {optimized.changes}")
+        logger.info(f"Optimizer changes: {optimized.changes}")
         # Store last attempt for feedback (html or data depending on mode)
-        last_attempt = optimized.html if optimized.html else (
-            optimized.data.model_dump_json() if optimized.data else None
+        last_attempt = (
+            optimized.html
+            if optimized.html
+            else (optimized.data.model_dump_json() if optimized.data else None)
         )
 
         # Render PDF and extract text for filters (like real ATS)
@@ -178,7 +195,9 @@ async def optimize_for_job(
                 ]
             )
         else:
-            validation = await run_filters(optimized, job, source, parallel=parallel, no_shame=no_shame)
+            validation = await run_filters(
+                optimized, job, source, parallel=parallel, no_shame=no_shame
+            )
 
         if on_iteration:
             on_iteration(i, optimized, validation)

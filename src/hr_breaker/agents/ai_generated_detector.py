@@ -3,8 +3,9 @@ from datetime import date
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 
-from hr_breaker.config import get_model_settings, get_settings
+from hr_breaker.config import get_flash_model, get_model_settings
 from hr_breaker.models import FilterResult, OptimizedResume
+from hr_breaker.utils.retry import run_with_retry
 
 
 class AIGeneratedResult(BaseModel):
@@ -69,9 +70,8 @@ When listing indicators, quote specific problematic text.
 
 
 def get_ai_generated_agent() -> Agent:
-    settings = get_settings()
     agent = Agent(
-        f"google-gla:{settings.gemini_flash_model}",
+        get_flash_model(),
         output_type=AIGeneratedResult,
         system_prompt=SYSTEM_PROMPT,
         model_settings=get_model_settings(),
@@ -105,7 +105,7 @@ async def detect_ai_generated(optimized: OptimizedResume) -> FilterResult:
 Look for patterns that indicate AI generation while ignoring normal resume conventions."""
 
     agent = get_ai_generated_agent()
-    result = await agent.run(prompt)
+    result = await run_with_retry(agent.run, prompt)
     r = result.output
 
     issues = []

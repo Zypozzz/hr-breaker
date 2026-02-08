@@ -1,4 +1,6 @@
 output/
+*.pdf
+.worktrees/
 
 # Python
 __pycache__/

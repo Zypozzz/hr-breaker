@@ -10,6 +10,7 @@ from hr_breaker.config import get_settings
 from hr_breaker.models import GeneratedPDF, ResumeSource, SUPPORTED_LANGUAGES, get_language
 from hr_breaker.orchestration import optimize_for_job
 from hr_breaker.services import PDFStorage, scrape_job_posting, ScrapingError, CloudflareBlockedError
+from hr_breaker.services.pdf_parser import load_resume_content
 
 
 @click.group()
@@ -24,11 +25,11 @@ OUTPUT_DIR = Path("output")
 @cli.command()
 @click.argument("resume_path", type=click.Path(exists=True, path_type=Path))
 @click.argument("job_input")
-@click.option("--output", "-o", type=click.Path(path_type=Path), default=None)
-@click.option("--max-iterations", "-n", type=int, default=None)
-@click.option("--debug", "-d", is_flag=True, help="Save all iterations as PDFs to output/debug/")
-@click.option("--seq", "-s", is_flag=True, help="Run filters sequentially (default: parallel)")
-@click.option("--no-shame", is_flag=True, help="Lenient mode: allow aggressive content stretching")
+@click.option("--output", "-o", type=click.Path(path_type=Path), default=None, envvar="HR_BREAKER_OUTPUT")
+@click.option("--max-iterations", "-n", type=int, default=None, envvar="HR_BREAKER_MAX_ITERATIONS")
+@click.option("--debug", "-d", is_flag=True, help="Save all iterations as PDFs to output/debug/", envvar="HR_BREAKER_DEBUG")
+@click.option("--seq", "-s", is_flag=True, help="Run filters sequentially (default: parallel)", envvar="HR_BREAKER_SEQ")
+@click.option("--no-shame", is_flag=True, help="Lenient mode: allow aggressive content stretching", envvar="HR_BREAKER_NO_SHAME")
 @click.option(
     "--lang", "-l",
     type=click.Choice([lang.code for lang in SUPPORTED_LANGUAGES], case_sensitive=False),
@@ -47,14 +48,10 @@ def optimize(
 ):
     """Optimize resume for job posting.
 
-    RESUME_PATH: Path to resume file (any text format: .tex, .md, .txt, etc.)
+    RESUME_PATH: Path to resume file (.tex, .md, .txt, .pdf, etc.)
     JOB_INPUT: URL or path to file with job description
     """
-    settings = get_settings()
-    if not settings.google_api_key:
-        raise click.ClickException("GOOGLE_API_KEY not set in environment")
-
-    resume_content = resume_path.read_text()
+    resume_content = load_resume_content(resume_path)
 
     # Get job text (sync - may need user interaction for Cloudflare)
     job_text = _get_job_text(job_input)
@@ -84,6 +81,7 @@ def optimize(
                 click.echo(f"    Debug: no PDF (render failed)")
 
     # Resolve target language
+    settings = get_settings()
     lang_code = lang or settings.default_language
     target_language = get_language(lang_code) if lang_code != "en" else None
 

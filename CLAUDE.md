@@ -18,8 +18,8 @@ Tool for optimizing resumes for job postings and passing automated filters.
 ## Architecture
 
 1. Streamlit frontend
-2. Pydantic-AI LLM agent framework
-3. Google Gemini models (configurable via env)
+2. Pydantic-AI LLM agent framework + pydantic-ai-litellm (any LLM provider)
+3. Default: Google Gemini models (configurable to OpenAI, Anthropic, etc. via litellm)
 4. Modular filter system - easy to add new checks
 5. Resume caching - input once, apply to many jobs
 
@@ -30,14 +30,15 @@ Unit-tests: pytest
 HTTP library: httpx
 
 Pydantic-AI docs: https://ai.pydantic.dev/llms-full.txt
+LiteLLM docs: https://docs.litellm.ai/docs/
 
 ## Guidelines
 
 When debugging use 1-2 iterations only (costs money). Use these settings:
 ```
-GEMINI_THINKING_BUDGET=1024
-GEMINI_PRO_MODEL=gemini-2.5-flash
-GEMINI_FLASH_MODEL=gemini-2.5-flash
+REASONING_EFFORT=low
+PRO_MODEL=gemini/gemini-2.5-flash
+FLASH_MODEL=gemini/gemini-2.5-flash
 ```
 
 ## Current Implementation
@@ -50,11 +51,12 @@ src/hr_breaker/
 ├── filters/         # Plugin-based filter system
 ├── services/        # Rendering, scraping, caching
 │   └── scrapers/    # Job scraper implementations
-├── utils/           # Helpers
+├── utils/           # Helpers (retry with backoff, HTML text extraction)
 ├── orchestration.py # Core optimization loop
 ├── main.py          # Streamlit UI
 ├── cli.py           # Click CLI
-└── config.py        # Settings
+├── config.py        # Settings (pydantic-settings BaseSettings, auto-reads env vars)
+└── litellm_patch.py # Monkey-patch for pydantic-ai-litellm vision support
 ```
 
 ### Agents
@@ -75,7 +77,7 @@ Filters run by priority (lower first). Default: parallel execution. Use `--seq` 
 | 3 | HallucinationChecker | Detect fabricated claims not supported by original resume |
 | 4 | KeywordMatcher | TF-IDF keyword matching |
 | 5 | LLMChecker | Combined vision + ATS simulation |
-| 6 | VectorSimilarityMatcher | Gemini embedding similarity |
+| 6 | VectorSimilarityMatcher | Embedding similarity (via litellm) |
 | 7 | AIGeneratedChecker | AI content detection |
 
 To add filter: subclass `BaseFilter`, set `name` and `priority`, use `@FilterRegistry.register`
@@ -114,7 +116,33 @@ uv run pytest tests/
 - Templates in `templates/` (resume_wrapper.html, resume_guide.md)
 - Name extraction uses LLM - handles any input format
 
+### pydantic-ai-litellm Vision Bug
+
+`pydantic-ai-litellm` v0.2.3 does not support vision/`BinaryContent`. When an agent receives a list with text + `BinaryContent` (image), the library stringifies the image object (`str(item)`) instead of base64-encoding it into an OpenAI-compatible `image_url` part. The model receives garbage text like `"BinaryContent(data=b'\\x89PNG...')"` and never sees the actual image.
+
+This breaks `combined_reviewer` which sends a rendered resume PNG for visual quality assessment.
+
+Fix: `litellm_patch.py` monkey-patches `LiteLLMModel._map_messages` to properly convert `BinaryContent` images to `{"type": "image_url", "image_url": {"url": "data:image/png;base64,..."}}`. Applied at startup via `config.py`. Remove when upstream fixes the bug.
+
+Repro: `uv run python scripts/repro_vision_bug.py` (without patch) vs `uv run python scripts/repro_vision_bug.py --patch` (with patch).
+
 ### Environment Variables
 
-See config options in `.env.example` and `config.py`
+`Settings` uses `pydantic-settings` `BaseSettings` — env vars are auto-mapped from uppercased field names. All settings in `config.py` are configurable via env vars. See `.env.example` for the full list.
+
+Key model config vars (litellm format):
+- `PRO_MODEL` - Pro model (default: `gemini/gemini-3-pro-preview`)
+- `FLASH_MODEL` - Flash model (default: `gemini/gemini-3-flash-preview`)
+- `EMBEDDING_MODEL` - Embedding model (default: `gemini/text-embedding-004`)
+- `REASONING_EFFORT` - none/low/medium/high (default: `medium`)
+- `GEMINI_API_KEY` - API key for Gemini (also accepts `GOOGLE_API_KEY` for backward compat)
+- `RETRY_MAX_ATTEMPTS` - Max retry attempts for rate limits (default: `5`)
+- `RETRY_MAX_WAIT` - Max backoff wait in seconds (default: `60`)
+
+CLI options (settable via env vars, CLI flags override):
+- `HR_BREAKER_OUTPUT` - output path
+- `HR_BREAKER_MAX_ITERATIONS` - max optimization iterations
+- `HR_BREAKER_DEBUG` - enable debug mode (true/1/yes)
+- `HR_BREAKER_SEQ` - run filters sequentially (true/1/yes)
+- `HR_BREAKER_NO_SHAME` - lenient mode (true/1/yes)
 

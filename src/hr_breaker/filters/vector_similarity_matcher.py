@@ -1,15 +1,15 @@
-from google import genai
-from google.genai import types
+from litellm import aembedding as litellm_aembedding
 
 from hr_breaker.config import get_settings
 from hr_breaker.filters.base import BaseFilter
 from hr_breaker.filters.registry import FilterRegistry
 from hr_breaker.models import FilterResult, JobPosting, OptimizedResume, ResumeSource
+from hr_breaker.utils.retry import run_with_retry
 
 
 @FilterRegistry.register
 class VectorSimilarityMatcher(BaseFilter):
-    """Vector similarity filter using Google Gemini embeddings."""
+    """Vector similarity filter using embeddings via litellm."""
 
     name = "VectorSimilarityMatcher"
     priority = 6
@@ -36,21 +36,17 @@ class VectorSimilarityMatcher(BaseFilter):
                 suggestions=["Ensure PDF compilation succeeds"],
             )
 
-        client = genai.Client(api_key=settings.google_api_key)
-
         resume_text = optimized.pdf_text
         job_text = f"{job.title} {job.description} {' '.join(job.requirements)}"
 
         try:
-            result = client.models.embed_content(
+            result = await run_with_retry(
+                litellm_aembedding,
                 model=settings.embedding_model,
-                contents=[resume_text, job_text],
-                config=types.EmbedContentConfig(
-                    task_type="SEMANTIC_SIMILARITY",
-                    output_dimensionality=settings.embedding_output_dimensionality,
-                ),
+                input=[resume_text, job_text],
+                dimensions=settings.embedding_output_dimensionality,
             )
-            embeddings = [emb.values for emb in result.embeddings]
+            embeddings = [item["embedding"] for item in result.data]
         except Exception as e:
             return FilterResult(
                 filter_name=self.name,

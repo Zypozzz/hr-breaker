@@ -18,7 +18,8 @@ dependencies = [
     "streamlit>=1.30",
     "pydantic>=2.0",
     "pydantic-ai",
-    "google-genai",
+    "pydantic-ai-litellm",
+    "tenacity>=8.0",
     "httpx",
     "beautifulsoup4",
     "scikit-learn>=1.0",
@@ -30,6 +31,7 @@ dependencies = [
     "nest-asyncio>=1.6.0",
     "playwright>=1.40",
     "watchdog>=6.0.0",
+    "pydantic-settings>=2.12.0",
 ]
 
 [project.scripts]
