@@ -1,11 +1,9 @@
 """Core optimization loop - used by both CLI and Streamlit."""
 
 import asyncio
-import tempfile
 import time
 from collections.abc import Callable
 from contextlib import contextmanager
-from pathlib import Path
 
 from hr_breaker.agents import optimize_resume, parse_job_posting, translate_resume, review_translation
 from hr_breaker.config import get_settings, logger
@@ -26,7 +24,7 @@ from hr_breaker.models import (
     ResumeSource,
     ValidationResult,
 )
-from hr_breaker.services.pdf_parser import extract_text_from_pdf
+from hr_breaker.services.pdf_parser import extract_text_from_pdf_bytes
 from hr_breaker.services.renderer import RenderError, HTMLRenderer
 
 # Ensure filters are registered
@@ -299,15 +297,8 @@ def _render_and_extract(optimized: OptimizedResume, renderer) -> OptimizedResume
                 raise RenderError("No content to render (neither html nor data)")
 
         # Extract text from rendered PDF
-        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
-            f.write(result.pdf_bytes)
-            pdf_path = Path(f.name)
-
-        try:
-            with log_time("extract_text_from_pdf"):
-                pdf_text = extract_text_from_pdf(pdf_path)
-        finally:
-            pdf_path.unlink()
+        with log_time("extract_text_from_pdf"):
+            pdf_text = extract_text_from_pdf_bytes(result.pdf_bytes)
 
         return optimized.model_copy(
             update={"pdf_text": pdf_text, "pdf_bytes": result.pdf_bytes}
